@@ -13,17 +13,70 @@ set(SDL2_INCLUDE_DIR "${SDL2_PATH}/include")
 set(SDL2_LIBRARY "${SDL2_PATH}/lib/x64/SDL2main.lib" "${SDL2_PATH}/lib/x64/SDL2.lib")
 set(SDL2_DLL "${SDL2_PATH}/lib/x64/SDL2.dll")
 
+set(SDL2_IMAGE_PATH "${CMAKE_CURRENT_LIST_DIR}/libs/SDL2_image-2.0.4")
+set(SDL2_IMAGE_INCLUDE_DIR "${SDL2_IMAGE_PATH}/include")
+set(SDL2_IMAGE_LIBRARY "${SDL2_IMAGE_PATH}/lib/x64/SDL2_image.lib")
+set(SDL2_IMAGE_DLLS 
+	"${SDL2_IMAGE_PATH}/lib/x64/libpng16-16.dll"
+	"${SDL2_IMAGE_PATH}/lib/x64/libjpeg-9.dll" 
+	"${SDL2_IMAGE_PATH}/lib/x64/libtiff-5.dll" 
+	"${SDL2_IMAGE_PATH}/lib/x64/libwebp-7.dll"
+	"${SDL2_IMAGE_PATH}/lib/x64/SDL2_image.dll"
+	"${SDL2_IMAGE_PATH}/lib/x64/zlib1.dll")
 
-include_directories(${SDL2_INCLUDE_DIR})
-link_directories("${SDL2_LIBRARY}")	
-file(COPY ${SDL2_DLL}
-    DESTINATION ${PROJECT_BINARY_DIR})
+set(RESOURCE_FILES
+    "${CMAKE_CURRENT_LIST_DIR}/assets/"
+)
+
+include_directories(${SDL2_INCLUDE_DIR}
+                    ${SDL2_IMAGE_INCLUDE_DIR}
+					"${CMAKE_CURRENT_LIST_DIR}/sources/game/"
+					"${CMAKE_CURRENT_LIST_DIR}/sources/ECS/"
+					"${CMAKE_CURRENT_LIST_DIR}/sources/math/")
+
+link_directories(${SDL2_LIBRARY} 
+                 ${SDL2_IMAGE_LIBRARY}
+				 ${CMAKE_CURRENT_LIST_DIR})	
 
 set(SOURCE_FILES 
 	"MazeGame.cpp"
-	"MazeGame.h"
-	"sources/Game.cpp"
-	"sources/Game.h")
+	"sources/game/AssetManager.cpp"
+	"sources/game/AssetManager.h"
+	"sources/game/Game.cpp"
+	"sources/game/Game.h"
+	"sources/game/TextureManager.cpp"
+	"sources/game/TextureManager.h"
+	"sources/game/GameObject.cpp"
+	"sources/game/GameObject.h"
+	"sources/game/TileMap.cpp"
+	"sources/game/TileMap.h"
+	"sources/ECS/ECS.cpp"
+	"sources/ECS/ECS.h"
+	"sources/ECS/Components.h"
+	"sources/ECS/SpriteComponent.h"
+	"sources/ECS/TransformComponent.h"
+	"sources/ECS/KeyboardController.h"
+	"sources/ECS/ColliderComponent.h"
+	"sources/ECS/TileComponent.h"
+	"sources/math/Vector2D.h"
+	"sources/math/Vector2D.cpp"
+	"sources/math/Collision.cpp"
+	"sources/math/Collision.h")
+
 add_executable(MazeGame ${SOURCE_FILES})
 
-target_link_libraries(MazeGame PRIVATE ${SDL2_LIBRARY} -lpthread)
+add_custom_command(TARGET MazeGame 
+	                      POST_BUILD
+	                      COMMAND ${CMAKE_COMMAND} -E copy ${SDL2_DLL} ${PROJECT_BINARY_DIR}
+	                      COMMAND ${CMAKE_COMMAND} -E copy ${SDL2_IMAGE_DLLS} ${PROJECT_BINARY_DIR}
+	                      COMMAND ${CMAKE_COMMAND} -E copy_directory ${RESOURCE_FILES} "${PROJECT_BINARY_DIR}/assets/"
+						  )
+
+
+target_link_libraries(MazeGame PRIVATE ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
+
+if(MSVC)
+  target_compile_options(MazeGame PRIVATE /W4 /WX)
+else()
+  target_compile_options(MazeGame PRIVATE -Wall -Wextra -pedantic -Werror)
+endif()

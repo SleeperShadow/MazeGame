@@ -1,29 +1,41 @@
 ﻿// MazeGame.cpp : Defines the entry point for the application.
 //
 
-#include "MazeGame.h"
+#include "Game.h"
 #include "SDL.h"
+#include "TileMap.h"
+#include <iostream>
 
 using namespace std;
 
-int main(int argc, char ** argv)
-{
-	SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_Window* window = SDL_CreateWindow("title", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 400, SDL_WINDOW_SHOWN);
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
-	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-	
-	SDL_RenderClear(renderer);
+int main(int argc, char **argv) {
+  (void)argc;
+  (void)argv;
 
-	SDL_RenderPresent(renderer);
+  Game &game = Game::instance();
 
-	SDL_Delay(3000);
+  game.init("Maze", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 640,
+            false);
 
-	while (true)
-	{
-		
-	}
+  const int FPS = 64;
+  const int frameDelay = 1000 / FPS;
 
-	cout << "Hello CMake." << endl;
-	return 0;
+  uint32_t frameStart;
+  int frameTime;
+
+  while (game.running()) {
+    frameStart = SDL_GetTicks(); // ticks since SDL init
+
+    game.handleEvents();
+    game.update();
+    game.render();
+
+    frameTime = SDL_GetTicks() - frameStart;
+
+    if (frameDelay > frameTime) {
+      SDL_Delay(frameDelay - frameTime);
+    }
+  }
+
+  return 0;
 }
