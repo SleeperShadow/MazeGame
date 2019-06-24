@@ -5,17 +5,26 @@
 #include <map>
 #include <string>
 
-class AssetManager {
+class AssetManager
+{
 public:
-  AssetManager(Manager *m);
+  AssetManager(Manager* m);
 
-  ~AssetManager();
+  inline void changeManager(Manager* m) { manager = m; }
 
-  void addTexture(std::string const &id, std::string const &path);
+  void createProjectile(Vector2D pos,
+                        Vector2D vel,
+                        int range,
+                        int speed,
+                        std::string const& texid);
 
-  SDL_Texture *getTexture(std::string const &id);
+  // textures
+  static void addTexture(std::string const& id, std::string const& path);
+
+  static SDL_Texture* getTexture(std::string const& id);
+
+  static void cleanup();
 
 private:
-  Manager *manager;
-  std::map<std::string, SDL_Texture *> textures;
+  Manager* manager;
 };

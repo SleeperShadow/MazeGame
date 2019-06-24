@@ -5,6 +5,11 @@ Vector2D::Vector2D(float _x, float _y)
   , y(_y)
 {}
 
+Vector2D::Vector2D(int _x, int _y)
+  : x(static_cast<float>(_x))
+  , y(static_cast<float>(_y))
+{}
+
 Vector2D&
 operator+(Vector2D& v, Vector2D const& other)
 {

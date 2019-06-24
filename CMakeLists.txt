@@ -32,6 +32,7 @@ include_directories(${SDL2_INCLUDE_DIR}
                     ${SDL2_IMAGE_INCLUDE_DIR}
 					"${CMAKE_CURRENT_LIST_DIR}/sources/game/"
 					"${CMAKE_CURRENT_LIST_DIR}/sources/ECS/"
+					"${CMAKE_CURRENT_LIST_DIR}/sources/maze/"
 					"${CMAKE_CURRENT_LIST_DIR}/sources/math/")
 
 link_directories(${SDL2_LIBRARY} 
@@ -46,8 +47,6 @@ set(SOURCE_FILES
 	"sources/game/Game.h"
 	"sources/game/TextureManager.cpp"
 	"sources/game/TextureManager.h"
-	"sources/game/GameObject.cpp"
-	"sources/game/GameObject.h"
 	"sources/game/TileMap.cpp"
 	"sources/game/TileMap.h"
 	"sources/ECS/ECS.cpp"
@@ -58,10 +57,20 @@ set(SOURCE_FILES
 	"sources/ECS/KeyboardController.h"
 	"sources/ECS/ColliderComponent.h"
 	"sources/ECS/TileComponent.h"
+	"sources/ECS/ProjectileComponent.h"
 	"sources/math/Vector2D.h"
 	"sources/math/Vector2D.cpp"
 	"sources/math/Collision.cpp"
-	"sources/math/Collision.h")
+	"sources/math/Collision.h"
+	"sources/maze/Door.cpp"
+	"sources/maze/Door.h"
+	"sources/maze/MapSite.h"
+	"sources/maze/Maze.cpp"
+	"sources/maze/Maze.h"
+	"sources/maze/Room.cpp"
+	"sources/maze/Room.h"
+	"sources/maze/Wall.cpp"
+	"sources/maze/Wall.h")
 
 add_executable(MazeGame ${SOURCE_FILES})
 

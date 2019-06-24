@@ -7,10 +7,17 @@
 #include <fstream>
 #include <iostream>
 
-void TileMap::load(std::string const &path, int maxX, int maxY) {
+void
+TileMap::load(std::string const& path, int maxX, int maxY)
+{
   char tile;
   std::fstream map(path);
   auto dstSize = _tileSize * _mapScale;
+
+  Game::instance()
+    .getManager()
+    .getGroup(Game::GroupLabels::Map)
+    .reserve(static_cast<size_t>(maxX * maxY));
 
   if (map.is_open()) {
     for (int y = 0; y < maxY; ++y) {
@@ -26,15 +33,16 @@ void TileMap::load(std::string const &path, int maxX, int maxY) {
 
     map.ignore();
 
-    auto &manager = Game::instance().getManager();
+    auto& manager = Game::instance().getManager();
 
     for (int y = 0; y < maxY; ++y) {
       for (int x = 0; x < maxX; ++x) {
         map.get(tile);
         if (tile == '1') {
-          auto &collider = manager.addEntity();
-          collider.addComponent<ColliderComponent>("terrain", x * dstSize,
-                                                   y * dstSize, dstSize);
+          auto& collider = manager.addEntity();
+          collider.addComponent<ColliderComponent>(
+            "terrain", x * dstSize, y * dstSize, dstSize, 2);
+          collider.addGroup(Game::GroupLabels::Bricks);
         }
         map.ignore();
       }
@@ -43,11 +51,16 @@ void TileMap::load(std::string const &path, int maxX, int maxY) {
   }
 }
 
-TileMap::TileMap(std::string const &tid, int tileSize, int mapScale)
-    : texid(tid), _mapScale(mapScale), _tileSize(tileSize) {}
+TileMap::TileMap(std::string const& tid, int tileSize, int mapScale)
+  : texid(tid)
+  , _mapScale(mapScale)
+  , _tileSize(tileSize)
+{}
 
-void TileMap::addTile(int srcX, int srcY, int x, int y) {
-  auto &tile(Game::instance().getManager().addEntity());
-  tile.addComponent<TileComponent>(srcX, srcY, x, y, _tileSize, _mapScale,
-                                   texid);
+void
+TileMap::addTile(int srcX, int srcY, int x, int y)
+{
+  auto& tile(Game::instance().getManager().addEntity());
+  tile.addComponent<TileComponent>(
+    srcX, srcY, x, y, _tileSize, _tileSize, _mapScale, texid);
 }

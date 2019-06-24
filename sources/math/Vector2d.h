@@ -8,6 +8,7 @@ struct Vector2D
 
   Vector2D() = default;
   Vector2D(float x, float y);
+  explicit Vector2D(int x, int y);
 
   friend Vector2D& operator+(Vector2D& v, Vector2D const& other);
   friend Vector2D& operator-(Vector2D& v, Vector2D const& other);

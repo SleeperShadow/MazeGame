@@ -1,10 +1,21 @@
 #pragma once
 
-struct Animation {
-  int index;
+enum AnimationId : unsigned char
+{
+  Idle = 0,
+  Move,
+  Attack,
+  Death,
+};
+
+struct Animation
+{
   int frames;
   int speed;
 
   Animation() = default;
-  Animation(int i, int f, int s) : index(i), frames(f), speed(s) {}
+  Animation(int f, int s)
+    : frames(f)
+    , speed(s)
+  {}
 };

@@ -4,13 +4,18 @@
 #include <memory>
 #include <vector>
 
-class ColliderComponent;
 class Manager;
+class Entity;
 class AssetManager;
 
-class Game {
+class Game
+{
 public:
-  void init(const char *title, int x, int y, int width, int height,
+  void init(const char* title,
+            int x,
+            int y,
+            int width,
+            int height,
             bool fullscreen) noexcept;
   void handleEvents() noexcept;
   void update() noexcept;
@@ -20,11 +25,13 @@ public:
   bool running() const noexcept;
 
 public:
-  inline SDL_Renderer *getRenderer() { return renderer; }
+  inline SDL_Renderer* getRenderer() { return renderer; }
 
-  static Game &instance();
+  static Game& instance();
 
-  Manager &getManager();
+  Manager& getManager();
+
+  void setManager(Manager* m);
 
   SDL_Event event;
 
@@ -37,16 +44,20 @@ public:
   ~Game();
 
 public:
-  enum GroupLabels : std::size_t {
+  enum GroupLabels : std::size_t
+  {
     Map,
+    Bricks,
     Players,
     Enemies,
-    Colliders,
+    Projectiles,
   };
 
 private:
-  SDL_Window *window;
-  SDL_Renderer *renderer;
+  SDL_Window* window;
+  SDL_Renderer* renderer;
+  Manager* manager;
+  Entity* player;
 
   int _width;
   int _height;

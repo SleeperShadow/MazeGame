@@ -4,25 +4,30 @@
 #include "Collision.h"
 #include "Components.h"
 #include "ECS.h"
-#include "GameObject.h"
 #include "TextureManager.h"
-#include "TileMap.h"
 #include <iostream>
 
-std::unique_ptr<TileMap> map;
-
-std::unique_ptr<Manager> manager{new Manager()};
-
-auto &player = manager -> addEntity();
-
 Game::Game()
-    : isRunning(false), window(nullptr), renderer(nullptr),
-      assets(new AssetManager(manager.get())) {}
+  : isRunning(false)
+  , window(nullptr)
+  , renderer(nullptr)
+{
+  setManager(manager);
+}
 
-Game::~Game() { cleanup(); }
+Game::~Game()
+{
+  cleanup();
+}
 
-void Game::init(const char *title, int x, int y, int width, int height,
-                bool fullscreen) noexcept {
+void
+Game::init(const char* title,
+           int x,
+           int y,
+           int width,
+           int height,
+           bool fullscreen) noexcept
+{
   int flags = fullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN;
   isRunning = false;
   _width = width;
@@ -39,61 +44,86 @@ void Game::init(const char *title, int x, int y, int width, int height,
       if (renderer) {
         std::cout << "Renderer created" << std::endl;
 
-        assets->addTexture("player", "assets/player.png");
+        assets->addTexture("player", "assets/player->png");
         assets->addTexture("terrain", "assets/terrain_ss.png");
         assets->addTexture("collider", "assets/ColTex.png");
+        assets->addTexture("arrow", "assets/Arrow.png");
 
         isRunning = true;
-        player.addComponent<TransformComponent>(_width / 2.f, 220.f, 22, 32, 2);
-        player.addComponent<SpriteComponent>("player", true);
-        player.addComponent<KeyboardController>();
-        player.addComponent<ColliderComponent>("player");
-        player.addGroup(GroupLabels::Players);
+        player->addComponent<TransformComponent>(
+          Vector2D{ _width / 2.f, _height / 2.f },
+          Vector2D{ 0.f, 0.f },
+          22,
+          32,
+          1);
+        player->addComponent<SpriteComponent>(
+          "player",
+          std::map<AnimationId, Animation>{
+            std::make_pair<AnimationId, Animation>(AnimationId::Idle,
+                                                   Animation{ 4, 100 }),
+            std::make_pair<AnimationId, Animation>(AnimationId::Move,
+                                                   Animation{ 13, 100 }) });
 
-        map.reset(new TileMap("terrain", 32, 2));
-        map->load("assets/map.map", 25, 20);
+        player->addComponent<KeyboardController>();
+        player->addComponent<ColliderComponent>("player");
+        player->addGroup(GroupLabels::Players);
 
-        camera = SDL_Rect{0, 0, _width, _height};
+        assets->createProjectile(Vector2D{ _width / 2.f, _height / 2.f },
+                                 Vector2D{ -1, -1 },
+                                 10,
+                                 3,
+                                 "arrow");
+        assets->createProjectile(
+          Vector2D{ 0 / 2.f, 0 / 2.f }, Vector2D{ 1, 1 }, 10, 3, "arrow");
+
+        camera = SDL_Rect{ 0, 0, _width, _height };
       }
     }
   }
 }
 
-auto &tiles(manager->getGroup(Game::GroupLabels::Map));
-auto &players(manager->getGroup(Game::GroupLabels::Players));
-auto &colliders(manager->getGroup(Game::GroupLabels::Colliders));
-auto &enemies(manager->getGroup(Game::GroupLabels::Enemies));
-
-void Game::handleEvents() noexcept {
+void
+Game::handleEvents() noexcept
+{
   SDL_PollEvent(&event);
 
   switch (event.type) {
-  case SDL_QUIT:
-    isRunning = false;
-    break;
-  default:
-    break;
+    case SDL_QUIT:
+      isRunning = false;
+      break;
+    default:
+      break;
   }
 }
 
-void Game::update() noexcept {
-  SDL_Rect playerCollider = player.getComponent<ColliderComponent>().collider;
-  Vector2D playerPosition = player.getComponent<TransformComponent>().pos;
+void
+Game::update() noexcept
+{
+  auto& colliders(manager->getGroup(Game::GroupLabels::Bricks));
+  auto& projectiles(manager->getGroup(Game::GroupLabels::Projectiles));
+
+  auto& playerCollider = player->getComponent<ColliderComponent>();
+  Vector2D playerPosition = player->getComponent<TransformComponent>().pos;
 
   manager->refresh();
   manager->update();
 
-  for (auto &collider : colliders) {
-    SDL_Rect temp = collider->getComponent<ColliderComponent>().collider;
-
-    if (Collision::AABB(temp, playerCollider)) {
-      player.getComponent<TransformComponent>().pos = playerPosition;
+  for (auto& collider : colliders) {
+    if (Collision::AABB(playerCollider,
+                        collider->getComponent<ColliderComponent>())) {
+      player->getComponent<TransformComponent>().pos = playerPosition;
     }
   }
 
-  camera.x = static_cast<int>(player.getComponent<TransformComponent>().pos.x -
+  for (auto& p : projectiles) {
+    if (Collision::AABB(playerCollider, p->getComponent<ColliderComponent>())) {
+      p->destroy();
+    }
+  }
+
+  camera.x = static_cast<int>(player->getComponent<TransformComponent>().pos.x -
                               _width / 2);
-  camera.y = static_cast<int>(player.getComponent<TransformComponent>().pos.y -
+  camera.y = static_cast<int>(player->getComponent<TransformComponent>().pos.y -
                               _height / 2);
 
   if (camera.x < 0)
@@ -106,40 +136,67 @@ void Game::update() noexcept {
     camera.y = camera.h;
 }
 
-void Game::render() noexcept {
+void
+Game::render() noexcept
+{
   SDL_RenderClear(renderer);
 
-  for (auto &tile : tiles) {
+  auto& tiles(manager->getGroup(Game::GroupLabels::Map));
+  auto& players(manager->getGroup(Game::GroupLabels::Players));
+  auto& enemies(manager->getGroup(Game::GroupLabels::Enemies));
+  auto& projectiles(manager->getGroup(Game::GroupLabels::Enemies));
+
+  for (auto& tile : tiles) {
     tile->draw();
   }
-  for (auto &collider : colliders) {
-    collider->draw();
-  }
 
-  for (auto &p : players) {
+  for (auto& p : players) {
     p->draw();
   }
 
-  for (auto &enemy : enemies) {
+  for (auto& enemy : enemies) {
     enemy->draw();
+  }
+
+  for (auto& proj : projectiles) {
+    proj->draw();
   }
 
   SDL_RenderPresent(renderer);
 }
 
-void Game::cleanup() noexcept {
+void
+Game::cleanup() noexcept
+{
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
   std::cout << "Cleanup done" << std::endl;
 }
 
-bool Game::running() const noexcept { return isRunning; }
+bool
+Game::running() const noexcept
+{
+  return isRunning;
+}
 
-Game &Game::instance() {
-  static std::unique_ptr<Game> game{new Game()};
+Game&
+Game::instance()
+{
+  static std::unique_ptr<Game> game{ new Game() };
 
   return *game;
 }
 
-Manager &Game::getManager() { return *manager; }
+Manager&
+Game::getManager()
+{
+  return *manager;
+}
+
+void
+Game::setManager(Manager* m)
+{
+  manager = m;
+  assets->changeManager(manager);
+}
