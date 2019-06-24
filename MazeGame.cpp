@@ -1,6 +1,7 @@
 ﻿// MazeGame.cpp : Defines the entry point for the application.
 //
 
+#include "ECS.h"
 #include "Game.h"
 #include "SDL.h"
 #include "TileMap.h"
@@ -8,14 +9,23 @@
 
 using namespace std;
 
-int main(int argc, char **argv) {
+int
+main(int argc, char** argv)
+{
   (void)argc;
   (void)argv;
 
-  Game &game = Game::instance();
+  Game& game = Game::instance();
 
-  game.init("Maze", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 640,
-            false);
+  auto m = std::make_unique<Manager>();
+
+  game.init("Maze",
+            SDL_WINDOWPOS_CENTERED,
+            SDL_WINDOWPOS_CENTERED,
+            800,
+            640,
+            false,
+            m.get());
 
   const int FPS = 64;
   const int frameDelay = 1000 / FPS;

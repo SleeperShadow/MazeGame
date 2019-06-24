@@ -16,7 +16,8 @@ public:
             int y,
             int width,
             int height,
-            bool fullscreen) noexcept;
+            bool fullscreen,
+            Manager* m) noexcept;
   void handleEvents() noexcept;
   void update() noexcept;
   void render() noexcept;

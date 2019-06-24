@@ -12,7 +12,7 @@ Game::Game()
   , window(nullptr)
   , renderer(nullptr)
 {
-  setManager(manager);
+  assets = std::make_unique<AssetManager>(nullptr);
 }
 
 Game::~Game()
@@ -26,8 +26,12 @@ Game::init(const char* title,
            int y,
            int width,
            int height,
-           bool fullscreen) noexcept
+           bool fullscreen,
+           Manager* m) noexcept
 {
+  setManager(m);
+  player = &manager->addEntity();
+
   int flags = fullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN;
   isRunning = false;
   _width = width;
