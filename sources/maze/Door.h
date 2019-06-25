@@ -1,19 +1,24 @@
 #pragma once
 #include "MapSite.h"
 
-class Room;
-
 class Door : public MapSite
 {
 public:
-  Door(Room* from, Room* to);
+  Door(MapSite* from, MapSite* to);
 
   virtual void enter() override;
 
-  Room* getCurrentRoom();
-  Room* otherSideOfDoor();
+  virtual void open();
+
+  bool opened() const { return isOpen; }
+
+  virtual SiteType type() override { return SiteType::Door; }
+
+  MapSite*& currentSideOfDoor();
+  MapSite*& otherSideOfDoor();
 
 private:
-  Room* current;
-  Room* other;
+  MapSite* current;
+  MapSite* other;
+  bool isOpen = false;
 };

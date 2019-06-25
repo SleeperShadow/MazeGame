@@ -42,7 +42,7 @@ TileMap::load(std::string const& path, int maxX, int maxY)
           auto& collider = manager.addEntity();
           collider.addComponent<ColliderComponent>(
             "terrain", x * dstSize, y * dstSize, dstSize, 2);
-          collider.addGroup(Game::GroupLabels::Bricks);
+          collider.addGroup(Game::GroupLabels::Walls);
         }
         map.ignore();
       }

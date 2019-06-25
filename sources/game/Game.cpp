@@ -7,6 +7,9 @@
 #include "TextureManager.h"
 #include <iostream>
 
+void
+createPlayer(Entity*& player);
+
 Game::Game()
   : isRunning(false)
   , window(nullptr)
@@ -30,7 +33,6 @@ Game::init(const char* title,
            Manager* m) noexcept
 {
   setManager(m);
-  player = &manager->addEntity();
 
   int flags = fullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_SHOWN;
   isRunning = false;
@@ -48,35 +50,16 @@ Game::init(const char* title,
       if (renderer) {
         std::cout << "Renderer created" << std::endl;
 
-        assets->addTexture("player", "assets/player->png");
-        assets->addTexture("terrain", "assets/terrain_ss.png");
-        assets->addTexture("collider", "assets/ColTex.png");
-        assets->addTexture("arrow", "assets/Arrow.png");
+        assets->addTexture("player", "assets/player.png");
+        assets->addTexture("grass", "assets/grass.png");
+        assets->addTexture("wall", "assets/wall.png");
+        assets->addTexture("axe_skeleton", "assets/axe_skeleton.png");
+        assets->addTexture("door", "assets/door.png");
+
+        createPlayer(player);
 
         isRunning = true;
-        player->addComponent<TransformComponent>(
-          Vector2D{ _width / 2.f, _height / 2.f },
-          Vector2D{ 0.f, 0.f },
-          22,
-          32,
-          1);
-        player->addComponent<SpriteComponent>(
-          "player",
-          std::map<AnimationId, Animation>{
-            std::make_pair<AnimationId, Animation>(AnimationId::Idle,
-                                                   Animation{ 4, 100 }),
-            std::make_pair<AnimationId, Animation>(AnimationId::Move,
-                                                   Animation{ 13, 100 }) });
 
-        player->addComponent<KeyboardController>();
-        player->addComponent<ColliderComponent>("player");
-        player->addGroup(GroupLabels::Players);
-
-        assets->createProjectile(Vector2D{ _width / 2.f, _height / 2.f },
-                                 Vector2D{ -1, -1 },
-                                 10,
-                                 3,
-                                 "arrow");
         assets->createProjectile(
           Vector2D{ 0 / 2.f, 0 / 2.f }, Vector2D{ 1, 1 }, 10, 3, "arrow");
 
@@ -103,7 +86,8 @@ Game::handleEvents() noexcept
 void
 Game::update() noexcept
 {
-  auto& colliders(manager->getGroup(Game::GroupLabels::Bricks));
+  auto& colliders(manager->getGroup(Game::GroupLabels::Walls));
+  auto& doors(manager->getGroup(Game::GroupLabels::Doors));
   auto& projectiles(manager->getGroup(Game::GroupLabels::Projectiles));
 
   auto& playerCollider = player->getComponent<ColliderComponent>();
@@ -112,10 +96,16 @@ Game::update() noexcept
   manager->refresh();
   manager->update();
 
-  for (auto& collider : colliders) {
+  for (auto& wall : colliders) {
     if (Collision::AABB(playerCollider,
-                        collider->getComponent<ColliderComponent>())) {
+                        wall->getComponent<ColliderComponent>())) {
       player->getComponent<TransformComponent>().pos = playerPosition;
+    }
+  }
+  for (auto& door : doors) {
+    if (Collision::AABB(playerCollider,
+                        door->getComponent<ColliderComponent>())) {
+      door->getComponent<DoorComponent>().collide();
     }
   }
 
@@ -146,12 +136,20 @@ Game::render() noexcept
   SDL_RenderClear(renderer);
 
   auto& tiles(manager->getGroup(Game::GroupLabels::Map));
+  auto& walls(manager->getGroup(Game::GroupLabels::Walls));
+  auto& doors(manager->getGroup(Game::GroupLabels::Doors));
   auto& players(manager->getGroup(Game::GroupLabels::Players));
   auto& enemies(manager->getGroup(Game::GroupLabels::Enemies));
   auto& projectiles(manager->getGroup(Game::GroupLabels::Enemies));
 
   for (auto& tile : tiles) {
     tile->draw();
+  }
+  for (auto& wall : walls) {
+    wall->draw();
+  }
+  for (auto& door : doors) {
+    door->draw();
   }
 
   for (auto& p : players) {
@@ -203,4 +201,34 @@ Game::setManager(Manager* m)
 {
   manager = m;
   assets->changeManager(manager);
+  if (player)
+    createPlayer(player);
+}
+
+void
+createPlayer(Entity*& player)
+{
+  auto& newManager = Game::instance().getManager();
+
+  if (player)
+    player->destroy();
+
+  player = &newManager.addEntity();
+  player->addComponent<TransformComponent>(
+    Vector2D{ Game::instance()._width / 2.f, Game::instance()._height / 2.f },
+    Vector2D{ 0.f, 0.f },
+    32,
+    32,
+    2);
+  player->addComponent<SpriteComponent>(
+    "player",
+    std::map<AnimationId, Animation>{
+      std::make_pair<AnimationId, Animation>(AnimationId::Idle,
+                                             Animation{ 10, 100 }),
+      std::make_pair<AnimationId, Animation>(AnimationId::Move,
+                                             Animation{ 10, 100 }) });
+
+  player->addComponent<KeyboardController>();
+  player->addComponent<ColliderComponent>("player");
+  player->addGroup(Game::GroupLabels::Players);
 }

@@ -3,6 +3,7 @@
 #include "MapSite.h"
 #include "Room.h"
 #include <memory>
+#include <vector>
 
 class Maze : public MapSite
 {
@@ -12,15 +13,22 @@ public:
     return std::make_unique<Maze>();
   }
 
-  virtual std::unique_ptr<Room> createRoom(int roomNumber) const
+  virtual Room& createRoom() const
   {
-    return std::make_unique<Room>(roomNumber);
+    _rooms.emplace_back(new Room(_rooms.size()));
+    return *_rooms.back();
   }
 
-  virtual std::unique_ptr<Door> createDoor(Room* from, Room* to) const
+  Room* getRoom(int roomNumber) const
   {
-    return std::make_unique<Door>(from, to);
+    return roomNumber >= _rooms.size() || roomNumber < 0
+             ? nullptr
+             : _rooms[roomNumber].get();
   }
 
   virtual void enter() override;
+  virtual SiteType type() override { return SiteType::Maze; };
+
+private:
+  mutable std::vector<std::unique_ptr<Room>> _rooms;
 };

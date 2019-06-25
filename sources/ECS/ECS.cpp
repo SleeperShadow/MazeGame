@@ -1,6 +1,8 @@
 #include "ECS.h"
 
-void Entity::addGroup(Group g) {
+void
+Entity::addGroup(Group g)
+{
   groupBitset[g] = true;
-  m.addToGroup(this, g);
+  m->addToGroup(this, g);
 }

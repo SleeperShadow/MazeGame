@@ -1,8 +1,7 @@
 #include "Door.h"
-#include "Room.h"
 #include <algorithm>
 
-Door::Door(Room* from, Room* to)
+Door::Door(MapSite* from, MapSite* to)
   : current(from)
   , other(to)
 {}
@@ -10,17 +9,23 @@ Door::Door(Room* from, Room* to)
 void
 Door::enter()
 {
-  std::swap(current, other);
-  current->enter();
+  if (other && isOpen)
+    other->enter();
 }
 
-Room*
-Door::getCurrentRoom()
+void
+Door::open()
+{
+  isOpen = true;
+}
+
+MapSite*&
+Door::currentSideOfDoor()
 {
   return current;
 }
 
-Room*
+MapSite*&
 Door::otherSideOfDoor()
 {
   return other;

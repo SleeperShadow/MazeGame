@@ -3,6 +3,7 @@
 
 #include "ECS.h"
 #include "Game.h"
+#include "MazeBuilder.h"
 #include "SDL.h"
 #include "TileMap.h"
 #include <iostream>
@@ -26,6 +27,11 @@ main(int argc, char** argv)
             640,
             false,
             m.get());
+
+  MazeBuilder builder(1);
+  builder.buildMaze();
+  auto maze = builder.getMaze();
+  maze->enter();
 
   const int FPS = 64;
   const int frameDelay = 1000 / FPS;

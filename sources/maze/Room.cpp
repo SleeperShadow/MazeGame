@@ -2,7 +2,7 @@
 #include "ECS.h"
 #include "Game.h"
 
-Room::Room(int number)
+Room::Room(std::size_t number)
   : _roomNumber(number)
 {
   _manager = std::make_unique<Manager>();
@@ -24,6 +24,11 @@ void
 Room::enter()
 {
   Game::instance().setManager(_manager.get());
+}
+
+Manager* Room::getManager() const
+{
+    return _manager.get();
 }
 
 Room::~Room() {}

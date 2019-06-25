@@ -37,6 +37,21 @@ public:
     collider.h = collider.w = size;
   }
 
+  ColliderComponent(std::string const& name,
+                    int x,
+                    int y,
+                    int sizeX,
+                    int sizeY,
+                    int sc)
+    : tag(name)
+    , scale(sc)
+  {
+    collider.x = x;
+    collider.y = y;
+    collider.h = sizeY;
+    collider.w = sizeX;
+  }
+
   void init() override
   {
     if (!entity->hasComponent<TransformComponent>()) {

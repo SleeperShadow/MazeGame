@@ -42,13 +42,17 @@ public:
 
   std::unique_ptr<AssetManager> assets;
 
+  int _width;
+  int _height;
+
   ~Game();
 
 public:
   enum GroupLabels : std::size_t
   {
     Map,
-    Bricks,
+    Walls,
+    Doors,
     Players,
     Enemies,
     Projectiles,
@@ -58,10 +62,7 @@ private:
   SDL_Window* window;
   SDL_Renderer* renderer;
   Manager* manager;
-  Entity* player;
-
-  int _width;
-  int _height;
+  Entity* player = nullptr;
 
 private:
   Game();
