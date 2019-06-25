@@ -9,6 +9,7 @@ struct Vector2D
   Vector2D() = default;
   Vector2D(float x, float y);
   explicit Vector2D(int x, int y);
+  explicit Vector2D(unsigned int x, unsigned int y);
 
   friend Vector2D& operator+(Vector2D& v, Vector2D const& other);
   friend Vector2D& operator-(Vector2D& v, Vector2D const& other);
@@ -23,6 +24,8 @@ struct Vector2D
   Vector2D& operator*(int i);
   Vector2D& operator*=(int i);
   Vector2D& zero();
+
+  double angle(Vector2D const& other);
 
   friend std::ostream& operator<<(std::ostream& os, Vector2D const& v);
   friend std::istream& operator>>(std::istream& is, Vector2D& v);

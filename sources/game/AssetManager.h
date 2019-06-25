@@ -8,14 +8,11 @@
 class AssetManager
 {
 public:
-  AssetManager(Manager* m);
-
-  inline void changeManager(Manager* m) { manager = m; }
-
   void createProjectile(Vector2D pos,
                         Vector2D vel,
                         int range,
                         int speed,
+                        double angle,
                         std::string const& texid);
 
   // textures
@@ -24,7 +21,4 @@ public:
   static SDL_Texture* getTexture(std::string const& id);
 
   static void cleanup();
-
-private:
-  Manager* manager;
 };

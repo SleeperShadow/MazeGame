@@ -129,8 +129,8 @@ public:
 
   void update()
   {
-    for (auto& e : entities)
-      e->update();
+    for (int i = 0; i < entities.size(); ++i)
+      entities[i]->update();
   }
 
   void draw()

@@ -1,4 +1,5 @@
 #include "Vector2d.h"
+#include <cmath>
 
 Vector2D::Vector2D(float _x, float _y)
   : x(_x)
@@ -8,6 +9,10 @@ Vector2D::Vector2D(float _x, float _y)
 Vector2D::Vector2D(int _x, int _y)
   : x(static_cast<float>(_x))
   , y(static_cast<float>(_y))
+{}
+
+Vector2D::Vector2D(unsigned int x, unsigned int y)
+  : Vector2D(static_cast<float>(x), static_cast<float>(y))
 {}
 
 Vector2D&
@@ -89,6 +94,18 @@ Vector2D&
 Vector2D::zero()
 {
   return Vector2D::operator*(0);
+}
+
+double
+Vector2D::angle(Vector2D const& other)
+{
+  auto dot = x * other.x + y * other.y;
+  auto len1 = sqrt(x * x + y * y);
+  auto len2 = sqrt(other.x * other.x + other.y * other.y);
+
+  auto cos = dot / (len1 * len2);
+
+  return acos(cos) * 180 / 3.14f;
 }
 
 Vector2D&

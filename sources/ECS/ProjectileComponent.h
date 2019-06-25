@@ -1,14 +1,16 @@
 #pragma once
 #include "Components.h"
 #include "ECS.h"
+#include "SpriteComponent.h"
 
 class Projectile : public Component
 {
 public:
-  Projectile(int rng, int sp)
+  Projectile(int rng, int sp, double a)
     : range(rng)
     , speed(sp)
     , distance(0)
+    , angle(a)
   {}
 
   ~Projectile() {}
@@ -16,10 +18,12 @@ public:
   void init() override
   {
     transform = &entity->getComponent<TransformComponent>();
+    sprite = &entity->getComponent<SpriteComponent>();
   }
 
   void update() override
   {
+
     distance += speed;
     if (distance > range) {
       entity->destroy();
@@ -40,4 +44,5 @@ private:
   int range;
   int speed;
   int distance;
+  double angle = 0.0;
 };

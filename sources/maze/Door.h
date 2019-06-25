@@ -1,6 +1,8 @@
 #pragma once
 #include "MapSite.h"
 
+class MazeBuilder;
+
 class Door : public MapSite
 {
 public:
@@ -13,6 +15,8 @@ public:
   bool opened() const { return isOpen; }
 
   virtual SiteType type() override { return SiteType::Door; }
+
+  void setBuilder(MazeBuilder* b);
 
   MapSite*& currentSideOfDoor();
   MapSite*& otherSideOfDoor();

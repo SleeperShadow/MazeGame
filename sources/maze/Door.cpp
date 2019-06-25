@@ -1,4 +1,5 @@
 #include "Door.h"
+#include "MazeBuilder.h"
 #include <algorithm>
 
 Door::Door(MapSite* from, MapSite* to)
@@ -9,8 +10,9 @@ Door::Door(MapSite* from, MapSite* to)
 void
 Door::enter()
 {
-  if (other && isOpen)
+  if (isOpen && other) {
     other->enter();
+  }
 }
 
 void

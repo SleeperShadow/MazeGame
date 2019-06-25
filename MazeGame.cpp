@@ -5,7 +5,6 @@
 #include "Game.h"
 #include "MazeBuilder.h"
 #include "SDL.h"
-#include "TileMap.h"
 #include <iostream>
 
 using namespace std;
@@ -30,8 +29,7 @@ main(int argc, char** argv)
 
   MazeBuilder builder(1);
   builder.buildMaze();
-  auto maze = builder.getMaze();
-  maze->enter();
+  builder.getMaze().enter();
 
   const int FPS = 64;
   const int frameDelay = 1000 / FPS;

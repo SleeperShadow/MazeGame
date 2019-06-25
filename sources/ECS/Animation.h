@@ -12,10 +12,14 @@ struct Animation
 {
   int frames;
   int speed;
+  int width;
+  int height;
 
   Animation() = default;
-  Animation(int f, int s)
+  Animation(int f, int s, int w, int h)
     : frames(f)
     , speed(s)
+    , width(w)
+    , height(h)
   {}
 };

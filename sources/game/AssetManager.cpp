@@ -3,21 +3,18 @@
 
 std::map<std::string, SDL_Texture*> textures;
 
-AssetManager::AssetManager(Manager* m)
-  : manager(m)
-{}
-
 void
 AssetManager::createProjectile(Vector2D pos,
                                Vector2D vel,
                                int range,
                                int speed,
+                               double angle,
                                std::string const& texid)
 {
-  auto& projectile = manager->addEntity();
-  projectile.addComponent<TransformComponent>(pos, vel, 32, 32, 2);
-  projectile.addComponent<SpriteComponent>(texid, false);
-  projectile.addComponent<Projectile>(range, speed);
+  auto& projectile = Game::instance().getManager().addEntity();
+  projectile.addComponent<TransformComponent>(pos, vel, 64, 64, 2, speed);
+  projectile.addComponent<SpriteComponent>(texid);
+  projectile.addComponent<Projectile>(range, speed, angle);
   projectile.addComponent<ColliderComponent>("projectile");
   projectile.addGroup(Game::GroupLabels::Projectiles);
 }

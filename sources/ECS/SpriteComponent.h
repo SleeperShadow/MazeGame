@@ -14,8 +14,8 @@ private:
   SDL_Rect dst;
 
   bool animated = false;
-  int frames = 0;
-  int speed = 100;
+  int frames = 1;
+  int speed = 50;
 
 public:
   AnimationId animationId = AnimationId::Idle;
@@ -23,6 +23,8 @@ public:
   SDL_RendererFlip spriteFlipped = SDL_FLIP_NONE;
 
   std::map<AnimationId, Animation> animations;
+
+  double angle = 0;
 
 public:
   SpriteComponent(std::string const& texid, bool animate = false)
@@ -46,7 +48,6 @@ public:
   {
     src.x = src.y = 0;
     setTex(texid);
-    play(AnimationId::Idle);
   }
 
   void setTex(std::string const& texid)
@@ -75,10 +76,19 @@ public:
     }
     src.y = animationId * transform->height;
 
-    if (transform->velocity.x >= 0)
+    if (transform->velocity.x >= 0) {
       spriteFlipped = SDL_FLIP_NONE;
-    else if (transform->velocity.x < 0)
+    } else if (transform->velocity.x < 0)
       spriteFlipped = SDL_FLIP_HORIZONTAL;
+
+    if (animationId != AnimationId::Attack) {
+      if (transform->velocity.x != 0 ||
+          transform->velocity.y != 0 &&
+            animations.find(AnimationId::Move) != animations.end())
+        play(AnimationId::Move);
+      else
+        play(AnimationId::Idle);
+    }
 
     dst.x = static_cast<int>(transform->pos.x - Game::instance().camera.x);
     dst.y = static_cast<int>(transform->pos.y - Game::instance().camera.y);
@@ -86,13 +96,20 @@ public:
     dst.h = static_cast<int>(transform->height * transform->scale);
   }
 
-  void draw() override { TextureManager::draw(tex, src, dst, spriteFlipped); }
+  void draw() override
+  {
+    TextureManager::draw(tex, src, dst, spriteFlipped, angle);
+  }
 
   void play(AnimationId id)
   {
     auto& anim = animations[id];
     frames = anim.frames;
     speed = anim.speed;
+    if (transform != nullptr) {
+      transform->width = anim.width;
+      transform->height = anim.height;
+    }
     animationId = id;
   }
 };

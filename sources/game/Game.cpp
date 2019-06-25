@@ -15,7 +15,7 @@ Game::Game()
   , window(nullptr)
   , renderer(nullptr)
 {
-  assets = std::make_unique<AssetManager>(nullptr);
+  assets = std::make_unique<AssetManager>();
 }
 
 Game::~Game()
@@ -54,14 +54,13 @@ Game::init(const char* title,
         assets->addTexture("grass", "assets/grass.png");
         assets->addTexture("wall", "assets/wall.png");
         assets->addTexture("axe_skeleton", "assets/axe_skeleton.png");
+        assets->addTexture("abyssRanger", "assets/AbyssRanger.png");
         assets->addTexture("door", "assets/door.png");
+        assets->addTexture("arrow", "assets/Arrow.png");
 
         createPlayer(player);
 
         isRunning = true;
-
-        assets->createProjectile(
-          Vector2D{ 0 / 2.f, 0 / 2.f }, Vector2D{ 1, 1 }, 10, 3, "arrow");
 
         camera = SDL_Rect{ 0, 0, _width, _height };
       }
@@ -89,20 +88,31 @@ Game::update() noexcept
   auto& colliders(manager->getGroup(Game::GroupLabels::Walls));
   auto& doors(manager->getGroup(Game::GroupLabels::Doors));
   auto& projectiles(manager->getGroup(Game::GroupLabels::Projectiles));
+  auto& enemies(manager->getGroup(Game::GroupLabels::Enemies));
 
   auto& playerCollider = player->getComponent<ColliderComponent>();
   Vector2D playerPosition = player->getComponent<TransformComponent>().pos;
 
-  manager->refresh();
   manager->update();
+  manager->refresh();
 
   for (auto& wall : colliders) {
     if (Collision::AABB(playerCollider,
                         wall->getComponent<ColliderComponent>())) {
       player->getComponent<TransformComponent>().pos = playerPosition;
     }
+    for (auto& e : enemies) {
+      if (Collision::AABB(e->getComponent<ColliderComponent>().collider,
+                          wall->getComponent<ColliderComponent>().collider)) {
+        e->getComponent<TransformComponent>().velocity.x *= -1;
+        e->getComponent<TransformComponent>().velocity.y *= -1;
+      }
+    }
   }
   for (auto& door : doors) {
+    if (enemies.empty())
+      door->getComponent<DoorComponent>().owner->open();
+
     if (Collision::AABB(playerCollider,
                         door->getComponent<ColliderComponent>())) {
       door->getComponent<DoorComponent>().collide();
@@ -112,6 +122,23 @@ Game::update() noexcept
   for (auto& p : projectiles) {
     if (Collision::AABB(playerCollider, p->getComponent<ColliderComponent>())) {
       p->destroy();
+    }
+    for (auto& e : enemies) {
+      if (Collision::AABB(e->getComponent<ColliderComponent>().collider,
+                          p->getComponent<ColliderComponent>().collider)) {
+        e->destroy();
+      }
+    }
+  }
+  for (auto& e : enemies) {
+    if (Collision::AABB(e->getComponent<ColliderComponent>().collider,
+                        playerCollider.collider)) {
+      e->getComponent<SpriteComponent>().play(AnimationId::Attack);
+      e->getComponent<TransformComponent>().velocity = Vector2D{ 0, 0 };
+    } else if (e->getComponent<SpriteComponent>().animationId ==
+               AnimationId::Attack) {
+      e->getComponent<SpriteComponent>().play(AnimationId::Move);
+      e->getComponent<TransformComponent>().velocity = Vector2D{ 1, 1 };
     }
   }
 
@@ -124,10 +151,6 @@ Game::update() noexcept
     camera.x = 0;
   if (camera.y < 0)
     camera.y = 0;
-  if (camera.x > camera.w)
-    camera.x = camera.w;
-  if (camera.y > camera.h)
-    camera.y = camera.h;
 }
 
 void
@@ -200,7 +223,6 @@ void
 Game::setManager(Manager* m)
 {
   manager = m;
-  assets->changeManager(manager);
   if (player)
     createPlayer(player);
 }
@@ -224,9 +246,13 @@ createPlayer(Entity*& player)
     "player",
     std::map<AnimationId, Animation>{
       std::make_pair<AnimationId, Animation>(AnimationId::Idle,
-                                             Animation{ 10, 100 }),
+                                             Animation{ 10, 100, 32, 32 }),
       std::make_pair<AnimationId, Animation>(AnimationId::Move,
-                                             Animation{ 10, 100 }) });
+                                             Animation{ 10, 100, 32, 32 }),
+      std::make_pair<AnimationId, Animation>(AnimationId::Attack,
+                                             Animation{ 10, 100, 32, 32 }),
+      std::make_pair<AnimationId, Animation>(AnimationId::Death,
+                                             Animation{ 10, 100, 32, 32 }) });
 
   player->addComponent<KeyboardController>();
   player->addComponent<ColliderComponent>("player");

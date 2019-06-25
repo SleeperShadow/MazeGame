@@ -47,8 +47,6 @@ set(SOURCE_FILES
 	"sources/game/Game.h"
 	"sources/game/TextureManager.cpp"
 	"sources/game/TextureManager.h"
-	"sources/game/TileMap.cpp"
-	"sources/game/TileMap.h"
 	"sources/ECS/ECS.cpp"
 	"sources/ECS/ECS.h"
 	"sources/ECS/Components.h"
