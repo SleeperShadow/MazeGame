@@ -156,7 +156,8 @@ MazeBuilder::spawnEnemies()
   std::uniform_int_distribution<std::mt19937::result_type> dist(
     scaledSize, m * level - scaledSize);
 
-  for (int lvl = 0; lvl < (level + 1) * (lastCreatedRoom + 2); ++lvl) {
+  auto hardness = level * level;
+  for (int lvl = 0; lvl < hardness * (lastCreatedRoom + 2); ++lvl) {
     spawnMeleeEnemy(Vector2D{ dist(rng), dist(rng) });
   }
 }

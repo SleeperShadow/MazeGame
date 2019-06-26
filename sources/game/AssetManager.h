@@ -9,7 +9,7 @@ class AssetManager
 {
 public:
   void createProjectile(Vector2D pos,
-                        Vector2D vel,
+                        Vector2D end,
                         int range,
                         int speed,
                         double angle,

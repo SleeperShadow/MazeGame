@@ -32,9 +32,9 @@ class HealthComponent : public Component
         auto pos = collider->collider;
         SDL_Rect rect;
         rect.x = (int)pos.x - Game::instance().camera.x;
-        rect.y = (int)pos.y - 32 - Game::instance().camera.y;
+        rect.y = (int)pos.y - 8 - Game::instance().camera.y;
         rect.w = collider->collider.w;
-        rect.h = 16;
+        rect.h = 8;
 
         SDL_RenderDrawRect(Game::instance().getRenderer(), &rect);
 

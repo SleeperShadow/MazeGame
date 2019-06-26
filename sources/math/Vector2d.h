@@ -25,7 +25,10 @@ struct Vector2D
   Vector2D& operator*=(int i);
   Vector2D& zero();
 
-  double angle(Vector2D const& other);
+
+  double length() const;
+
+  double angle(Vector2D const& other) const;
 
   friend std::ostream& operator<<(std::ostream& os, Vector2D const& v);
   friend std::istream& operator>>(std::istream& is, Vector2D& v);

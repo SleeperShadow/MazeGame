@@ -30,6 +30,8 @@ public:
   SpriteComponent(std::string const& texid, bool animate = false)
     : animated(animate)
   {
+    src.x = src.y = 0;
+    src.w = src.h = 32;
     setTex(texid);
   }
 
@@ -39,6 +41,7 @@ public:
     setTex(texid);
     src.x = srcX;
     src.y = srcY;
+    src.w = src.h = 32;
   }
 
   SpriteComponent(std::string const& texid,
@@ -47,6 +50,7 @@ public:
     , animations(std::forward<std::map<AnimationId, Animation>>(anims))
   {
     src.x = src.y = 0;
+    src.w = src.h = 32;
     setTex(texid);
   }
 
@@ -105,10 +109,8 @@ public:
     auto& anim = animations[id];
     frames = anim.frames;
     speed = anim.speed;
-    if (transform != nullptr) {
-      transform->width = anim.width;
-      transform->height = anim.height;
-    }
+    transform->width = anim.width;
+    transform->height = anim.height;
     animationId = id;
   }
 };

@@ -2,30 +2,34 @@
 #include "Components.h"
 #include "ECS.h"
 #include "SpriteComponent.h"
+#include "TextureManager.h"
 
 class Projectile : public Component
 {
 public:
-  Projectile(int rng, int sp, double a)
+  Projectile(int rng, int sp, double a, Vector2D s, Vector2D e)
     : range(rng)
     , speed(sp)
     , distance(0)
     , angle(a)
+    , start(s)
+    , end(e)
   {}
-
-  ~Projectile() {}
 
   void init() override
   {
     transform = &entity->getComponent<TransformComponent>();
     sprite = &entity->getComponent<SpriteComponent>();
+    sprite->angle = angle;
+    transform->velocity = end - start;
+    transform->velocity.x /= range;
+    transform->velocity.x *= speed;
+    transform->velocity.y /= range;
+    transform->velocity.y *= speed;
   }
 
   void update() override
   {
-    sprite->angle = angle;
-    sprite->src.x = 0;
-    sprite->src.y = 0;
     distance += speed;
     if (distance > range) {
       entity->destroy();
@@ -47,4 +51,6 @@ private:
   int speed;
   int distance;
   double angle = 0.0;
+  Vector2D start;
+  Vector2D end;
 };

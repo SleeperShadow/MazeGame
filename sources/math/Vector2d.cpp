@@ -96,16 +96,22 @@ Vector2D::zero()
   return Vector2D::operator*(0);
 }
 
+double Vector2D::length() const
+{
+    return sqrt(x*x + y* y);
+}
+
 double
-Vector2D::angle(Vector2D const& other)
+Vector2D::angle(Vector2D const& other) const
 {
   auto dot = x * other.x + y * other.y;
-  auto len1 = sqrt(x * x + y * y);
-  auto len2 = sqrt(other.x * other.x + other.y * other.y);
+  auto len1 = length();
+  auto len2 = other.length();
 
   auto cos = dot / (len1 * len2);
+  auto sin = 1.0 - cos* cos; 
 
-  return acos(cos) * 180 / 3.14f;
+  return asin(sin) * 180 / 3.14f;
 }
 
 Vector2D&

@@ -1,21 +1,22 @@
 #include "AssetManager.h"
 #include "Components.h"
+#include "Game.h"
 
 std::map<std::string, SDL_Texture*> textures;
 
 void
 AssetManager::createProjectile(Vector2D pos,
-                               Vector2D vel,
+                               Vector2D end,
                                int range,
                                int speed,
                                double angle,
                                std::string const& texid)
 {
   auto& projectile = Game::instance().getManager().addEntity();
-  projectile.addComponent<TransformComponent>(pos, vel, 32, 32, 2, speed);
-  projectile.addComponent<SpriteComponent>(texid);
-  projectile.addComponent<Projectile>(range, speed, angle);
+  projectile.addComponent<TransformComponent>(pos, Vector2D{0, 0}, 32, 32, 2, speed);
   projectile.addComponent<ColliderComponent>("projectile");
+  projectile.addComponent<SpriteComponent>(texid, false);
+  projectile.addComponent<Projectile>(range, speed, angle, pos, end);
   projectile.addGroup(Game::GroupLabels::Projectiles);
 }
 

@@ -71,6 +71,7 @@ Game::init(const char* title,
 void
 Game::handleEvents() noexcept
 {
+  event = SDL_Event();
   SDL_PollEvent(&event);
 
   switch (event.type) {
@@ -92,10 +93,9 @@ Game::update() noexcept
   auto& players(manager->getGroup(Game::GroupLabels::Players));
 
   ColliderComponent* playerCollider = nullptr;
-  Vector2D playerPosition {0, 0};
+  Vector2D playerPosition{ 0, 0 };
 
-  if (players.size())
-  {
+  if (players.size()) {
     playerCollider = &player->getComponent<ColliderComponent>();
     playerPosition = player->getComponent<TransformComponent>().pos;
   }
@@ -103,60 +103,62 @@ Game::update() noexcept
   manager->update();
   manager->refresh();
 
-  if (players.size())
-  {
-  for (auto& wall : colliders) {
-    if (Collision::AABB(*playerCollider,
-                        wall->getComponent<ColliderComponent>())) {
-      player->getComponent<TransformComponent>().pos = playerPosition;
+  if (players.size()) {
+    for (auto& wall : colliders) {
+      if (Collision::AABB(*playerCollider,
+                          wall->getComponent<ColliderComponent>())) {
+        player->getComponent<TransformComponent>().pos = playerPosition;
+      }
+      for (auto& e : enemies) {
+        if (Collision::AABB(e->getComponent<ColliderComponent>().collider,
+                            wall->getComponent<ColliderComponent>().collider)) {
+          e->getComponent<TransformComponent>().velocity.x *= -1;
+          e->getComponent<TransformComponent>().velocity.y *= -1;
+        }
+      }
+    }
+    for (auto& door : doors) {
+      if (enemies.empty())
+        door->getComponent<DoorComponent>().owner->open();
+
+      if (Collision::AABB(*playerCollider,
+                          door->getComponent<ColliderComponent>())) {
+        if (door->getComponent<DoorComponent>().owner->opened())
+          door->getComponent<DoorComponent>().collide();
+        else
+          player->getComponent<TransformComponent>().pos = playerPosition;
+      }
+    }
+
+    for (auto& p : projectiles) {
+      if (Collision::AABB(*playerCollider,
+                          p->getComponent<ColliderComponent>())) {
+        //p->destroy();
+      }
+      for (auto& e : enemies) {
+        if (Collision::AABB(e->getComponent<ColliderComponent>().collider,
+                            p->getComponent<ColliderComponent>().collider)) {
+          e->destroy();
+        }
+      }
     }
     for (auto& e : enemies) {
       if (Collision::AABB(e->getComponent<ColliderComponent>().collider,
-                          wall->getComponent<ColliderComponent>().collider)) {
-        e->getComponent<TransformComponent>().velocity.x *= -1;
-        e->getComponent<TransformComponent>().velocity.y *= -1;
+                          playerCollider->collider)) {
+        e->getComponent<SpriteComponent>().play(AnimationId::Attack);
+        e->getComponent<TransformComponent>().velocity = Vector2D{ 0, 0 };
+        player->getComponent<HealthComponent>().health -= 1;
+      } else if (e->getComponent<SpriteComponent>().animationId ==
+                 AnimationId::Attack) {
+        e->getComponent<SpriteComponent>().play(AnimationId::Move);
+        e->getComponent<TransformComponent>().velocity = Vector2D{ 1, 1 };
       }
     }
-  }
-  for (auto& door : doors) {
-    if (enemies.empty())
-      door->getComponent<DoorComponent>().owner->open();
 
-    if (Collision::AABB(*playerCollider,
-                        door->getComponent<ColliderComponent>())) {
-      door->getComponent<DoorComponent>().collide();
-    }
-  }
-
-  for (auto& p : projectiles) {
-    if (Collision::AABB(*playerCollider, p->getComponent<ColliderComponent>())) {
-      p->destroy();
-    }
-    for (auto& e : enemies) {
-      if (Collision::AABB(e->getComponent<ColliderComponent>().collider,
-                          p->getComponent<ColliderComponent>().collider)) {
-        e->destroy();
-      }
-    }
-  }
-  for (auto& e : enemies) {
-    if (Collision::AABB(e->getComponent<ColliderComponent>().collider,
-                        playerCollider->collider)) {
-      e->getComponent<SpriteComponent>().play(AnimationId::Attack);
-      e->getComponent<TransformComponent>().velocity = Vector2D{ 0, 0 };
-      player->getComponent<HealthComponent>().health -= 1;
-    } else if (e->getComponent<SpriteComponent>().animationId ==
-               AnimationId::Attack) {
-      e->getComponent<SpriteComponent>().play(AnimationId::Move);
-      e->getComponent<TransformComponent>().velocity = Vector2D{ 1, 1 };
-    }
-  }
-
-  camera.x = static_cast<int>(player->getComponent<TransformComponent>().pos.x -
-                              _width / 2);
-  camera.y = static_cast<int>(player->getComponent<TransformComponent>().pos.y -
-                              _height / 2);
-
+    camera.x = static_cast<int>(
+      player->getComponent<TransformComponent>().pos.x - _width / 2);
+    camera.y = static_cast<int>(
+      player->getComponent<TransformComponent>().pos.y - _height / 2);
   }
   if (camera.x < 0)
     camera.x = 0;
@@ -174,7 +176,7 @@ Game::render() noexcept
   auto& doors(manager->getGroup(Game::GroupLabels::Doors));
   auto& players(manager->getGroup(Game::GroupLabels::Players));
   auto& enemies(manager->getGroup(Game::GroupLabels::Enemies));
-  auto& projectiles(manager->getGroup(Game::GroupLabels::Enemies));
+  auto& projectiles(manager->getGroup(Game::GroupLabels::Projectiles));
 
   for (auto& tile : tiles) {
     tile->draw();
@@ -268,5 +270,6 @@ createPlayer(Entity*& player)
   player->addComponent<KeyboardController>();
   player->addComponent<ColliderComponent>("player");
   player->addComponent<HealthComponent>(100);
+  player->addComponent<MouseController>();
   player->addGroup(Game::GroupLabels::Players);
 }

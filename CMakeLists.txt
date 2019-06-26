@@ -54,6 +54,7 @@ set(SOURCE_FILES
 	"sources/ECS/TransformComponent.h"
 	"sources/ECS/HealthComponent.h"
 	"sources/ECS/KeyboardController.h"
+	"sources/ECS/MouseController.h"
 	"sources/ECS/ColliderComponent.h"
 	"sources/ECS/TileComponent.h"
 	"sources/ECS/ProjectileComponent.h"
