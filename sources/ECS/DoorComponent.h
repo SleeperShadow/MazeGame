@@ -26,7 +26,7 @@ public:
   void update() override
   {
     if (owner->opened() && doorFrame < 4) {
-      tile->src.x = tile->src.w * static_cast<int>((SDL_GetTicks() / 1000) % 5);
+      tile->src.x = doorFrame * 64;
       tile->src.y = 64;
       ++doorFrame;
     }

@@ -9,3 +9,4 @@
 #include "TileComponent.h"
 #include "TransformComponent.h"
 #include "WallComponent.h"
+#include "HealthComponent.h"

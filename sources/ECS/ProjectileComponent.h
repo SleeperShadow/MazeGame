@@ -23,7 +23,9 @@ public:
 
   void update() override
   {
-
+    sprite->angle = angle;
+    sprite->src.x = 0;
+    sprite->src.y = 0;
     distance += speed;
     if (distance > range) {
       entity->destroy();

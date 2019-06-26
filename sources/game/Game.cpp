@@ -56,7 +56,7 @@ Game::init(const char* title,
         assets->addTexture("axe_skeleton", "assets/axe_skeleton.png");
         assets->addTexture("abyssRanger", "assets/AbyssRanger.png");
         assets->addTexture("door", "assets/door.png");
-        assets->addTexture("arrow", "assets/Arrow.png");
+        assets->addTexture("arrow", "assets/arrow.png");
 
         createPlayer(player);
 
@@ -89,15 +89,24 @@ Game::update() noexcept
   auto& doors(manager->getGroup(Game::GroupLabels::Doors));
   auto& projectiles(manager->getGroup(Game::GroupLabels::Projectiles));
   auto& enemies(manager->getGroup(Game::GroupLabels::Enemies));
+  auto& players(manager->getGroup(Game::GroupLabels::Players));
 
-  auto& playerCollider = player->getComponent<ColliderComponent>();
-  Vector2D playerPosition = player->getComponent<TransformComponent>().pos;
+  ColliderComponent* playerCollider = nullptr;
+  Vector2D playerPosition {0, 0};
+
+  if (players.size())
+  {
+    playerCollider = &player->getComponent<ColliderComponent>();
+    playerPosition = player->getComponent<TransformComponent>().pos;
+  }
 
   manager->update();
   manager->refresh();
 
+  if (players.size())
+  {
   for (auto& wall : colliders) {
-    if (Collision::AABB(playerCollider,
+    if (Collision::AABB(*playerCollider,
                         wall->getComponent<ColliderComponent>())) {
       player->getComponent<TransformComponent>().pos = playerPosition;
     }
@@ -113,14 +122,14 @@ Game::update() noexcept
     if (enemies.empty())
       door->getComponent<DoorComponent>().owner->open();
 
-    if (Collision::AABB(playerCollider,
+    if (Collision::AABB(*playerCollider,
                         door->getComponent<ColliderComponent>())) {
       door->getComponent<DoorComponent>().collide();
     }
   }
 
   for (auto& p : projectiles) {
-    if (Collision::AABB(playerCollider, p->getComponent<ColliderComponent>())) {
+    if (Collision::AABB(*playerCollider, p->getComponent<ColliderComponent>())) {
       p->destroy();
     }
     for (auto& e : enemies) {
@@ -132,9 +141,10 @@ Game::update() noexcept
   }
   for (auto& e : enemies) {
     if (Collision::AABB(e->getComponent<ColliderComponent>().collider,
-                        playerCollider.collider)) {
+                        playerCollider->collider)) {
       e->getComponent<SpriteComponent>().play(AnimationId::Attack);
       e->getComponent<TransformComponent>().velocity = Vector2D{ 0, 0 };
+      player->getComponent<HealthComponent>().health -= 1;
     } else if (e->getComponent<SpriteComponent>().animationId ==
                AnimationId::Attack) {
       e->getComponent<SpriteComponent>().play(AnimationId::Move);
@@ -147,6 +157,7 @@ Game::update() noexcept
   camera.y = static_cast<int>(player->getComponent<TransformComponent>().pos.y -
                               _height / 2);
 
+  }
   if (camera.x < 0)
     camera.x = 0;
   if (camera.y < 0)
@@ -237,7 +248,7 @@ createPlayer(Entity*& player)
 
   player = &newManager.addEntity();
   player->addComponent<TransformComponent>(
-    Vector2D{ Game::instance()._width / 2.f, Game::instance()._height / 2.f },
+    Vector2D{ 128.f, Game::instance()._height / 2.f },
     Vector2D{ 0.f, 0.f },
     32,
     32,
@@ -256,5 +267,6 @@ createPlayer(Entity*& player)
 
   player->addComponent<KeyboardController>();
   player->addComponent<ColliderComponent>("player");
+  player->addComponent<HealthComponent>(100);
   player->addGroup(Game::GroupLabels::Players);
 }

@@ -42,7 +42,7 @@ public:
         auto y = Game::instance().event.button.y;
 
         entity->getComponent<SpriteComponent>().play(AnimationId::Attack);
-        auto pos = entity->getComponent<TransformComponent>().pos;
+        auto pos = entity->getComponent<TransformComponent>().pos ;
         Vector2D velocity = Vector2D{ x, y };
         velocity -= pos;
         velocity /= Vector2D{ 150.f, 150.f };

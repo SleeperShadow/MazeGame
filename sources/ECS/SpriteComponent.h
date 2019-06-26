@@ -7,7 +7,7 @@
 
 class SpriteComponent : public Component
 {
-private:
+public:
   TransformComponent* transform;
   SDL_Texture* tex;
   SDL_Rect src;
@@ -58,7 +58,6 @@ public:
   void setAnimations(std::map<AnimationId, Animation>&& anims)
   {
     animations = std::forward<std::map<AnimationId, Animation>>(anims);
-    play(AnimationId::Idle);
   }
 
   void init() override
@@ -81,7 +80,7 @@ public:
     } else if (transform->velocity.x < 0)
       spriteFlipped = SDL_FLIP_HORIZONTAL;
 
-    if (animationId != AnimationId::Attack) {
+    if (animationId != AnimationId::Attack && animated) {
       if (transform->velocity.x != 0 ||
           transform->velocity.y != 0 &&
             animations.find(AnimationId::Move) != animations.end())

@@ -12,7 +12,7 @@ AssetManager::createProjectile(Vector2D pos,
                                std::string const& texid)
 {
   auto& projectile = Game::instance().getManager().addEntity();
-  projectile.addComponent<TransformComponent>(pos, vel, 64, 64, 2, speed);
+  projectile.addComponent<TransformComponent>(pos, vel, 32, 32, 2, speed);
   projectile.addComponent<SpriteComponent>(texid);
   projectile.addComponent<Projectile>(range, speed, angle);
   projectile.addComponent<ColliderComponent>("projectile");

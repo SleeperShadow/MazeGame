@@ -22,8 +22,8 @@ main(int argc, char** argv)
   game.init("Maze",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
+            1000,
             800,
-            640,
             false,
             m.get());
 
